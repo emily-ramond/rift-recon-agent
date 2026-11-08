@@ -91,7 +91,36 @@ curl -s localhost:8000/chat -H 'content-type: application/json' \
 Expected answers come from direct SQL over the committed parquet files. "No tools" is the same model
 (`gemini-3.5-flash`) with no tools and no system prompt.
 
-SAMPLES_PLACEHOLDER
+### 1. "In ranked solo queue, do junglers who buy more control wards win more often?"
+
+**Expected** (`participants`, `queue_name = 'Ranked Solo/Duo' AND team_position = 'JUNGLE'`, grouped by `vision_wards_bought_in_game`):
+yes, up to a point. 0 wards: 44.7% (n=1,863). 1-2 wards: 53.1% (n=1,497). 3+ wards: 55.1% (n=1,021).
+2 wards peak at 57.7% (n=626), and 5+ dips to 53.2% (n=380).
+
+| No tools | Rift Recon |
+|---|---|
+| Yes, with diminishing returns. It cites "statistical sites (LeagueofGraphs, U.GG)" and makes up per-tier averages ("Diamond+ junglers buy 3 to 5 per game") and a drop-off at "7 or more". None of it is from data it can show. | 0 wards 44.71% (n=1,863) vs. 2 wards **57.67%** (n=626) [Q2][Q3]. 0 vs. 1-2 is significant (CIs don't overlap), 3+ plateaus, and 5+ falls to 53.16%. It warns that this is correlation: winning junglers have more gold, and games with more wards run longer (27.2 → 31.2 min) [Q2]. |
+
+### 2. "Does blue side or red side win more in Ranked Solo/Duo, and does it depend on game length?"
+
+**Expected** (`games`, `queue_name = 'Ranked Solo/Duo'`, `winning_team_id`):
+blue wins 1,151 of 2,191 games (52.5%). By length, blue wins 54.2% under 25 min, 52.8% at 25-35 min, and 48.5% at 35+ min.
+
+| No tools | Rift Recon |
+|---|---|
+| "Blue side wins more", about 50.5-52% "historically". Its length explanation (first pick, voidgrubs, a "strong blue side advantage" early) is generic reasoning, not a measurement. | Blue **52.53%** (1,151 of 2,191), 95% CI 50.4-54.6%, so significant [Q6][Q8]. By length, blue peaks at 55.4% at 15-20 min and drops below 50% after 35 min. It says the late-game flip isn't significant because every bucket's CI overlaps 50% [Q10][Q11]. |
+
+### 3. "Which marksman champions have the best win rate in Ranked Solo/Duo with at least 100 games, and is the gap real?"
+
+**Expected** (`participants` joined to `champions`, `primary_class = 'Marksman'`, `count(*) >= 100`):
+Teemo 56.9% (n=116), Vayne 56.1% (n=196), Jhin 54.2% (n=358), Miss Fortune 52.7% (n=423). The lowest is Smolder at 42.0% (n=119).
+The gaps aren't significant: every 95% CI overlaps.
+
+| No tools | Rift Recon |
+|---|---|
+| A generic Season 14 tier list (Ashe, Miss Fortune, Jinx, Kog'Maw, Nilah at "51.5-53.5%"). It can't apply the 100-game filter or test the gap. | Teemo 56.90% (n=116), Vayne 56.12% (196), Senna 54.35% (138), Jhin 54.19% (358), MF 52.72% (423), with Wilson CIs in a table [Q5][Q7]. "Not statistically real": the intervals overlap heavily, even Teemo vs. last-place Smolder (42.0%) [Q4][Q5]. |
+
+The no-tools model sounds confident but answers from general knowledge and invented numbers. The agent's numbers come from these 4,044 games, each cited to a query, and it says which gaps are noise.
 
 **Also try:**
 - **Vague:** "Who's the best?" or "What should I build?" The Lead asks one clarifying question with clickable options, then researches your answer in the same session.
