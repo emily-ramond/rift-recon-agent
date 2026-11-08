@@ -1,7 +1,7 @@
 [project]
-name = "wikipedia-deep-research"
+name = "rift-recon"
 version = "0.1.0"
-description = "Deep research over Wikipedia: a lead fans out researchers that walk Wikipedia's links, then a writer turns their findings into a cited report"
+description = "Deep research over real League of Legends match data: a lead fans out SQL researchers in parallel, then a writer turns their findings into a cited report"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.109.0",
@@ -10,4 +10,5 @@ dependencies = [
     "google-cloud-aiplatform>=1.40.0",
     "httpx>=0.27",
     "python-dotenv>=1.0",
+    "duckdb>=1.5.6",
 ]

@@ -3,198 +3,575 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Wikipedia Deep Research</title>
+        <title>Rift Recon</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
         <style>
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
+            :root {
+                --bg: #050b14;
+                --bg-2: #0a1428;
+                --panel: #0e1a2e;
+                --panel-2: #13223a;
+                --line: #1e2f4a;
+                --line-gold: #785a28;
+                --gold: #c8aa6e;
+                --gold-hi: #f0e6d2;
+                --text: #e8e2d4;
+                --muted: #8b97a8;
+                --blue: #0ac8b9;
+                --blue-dim: #0a8a80;
+                --red: #e84057;
+                --lead: #c8aa6e;
+                --researcher: #0ac8b9;
+                --writer: #b18cff;
+                --radius: 6px;
+                --mono: "JetBrains Mono", ui-monospace, monospace;
             }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            html { scroll-behavior: smooth; }
             body {
-                font-family: system-ui, sans-serif;
-                padding: 2rem;
-                color: #111;
+                background: radial-gradient(1200px 600px at 70% -10%, #13284a 0%, transparent 60%), var(--bg);
+                color: var(--text);
+                font: 15px/1.6 Inter, system-ui, sans-serif;
+                min-height: 100vh;
             }
-            main {
-                max-width: 760px;
-                margin: 0 auto;
-                display: flex;
-                flex-direction: column;
-                gap: 1.5rem;
+            a { color: var(--blue); }
+            h1, h2, h3, .display { font-family: Cinzel, Georgia, serif; letter-spacing: 0.04em; }
+            button { font: inherit; cursor: pointer; }
+
+            /* ---------- Header ---------- */
+            header {
+                display: flex; align-items: center; gap: 0.9rem;
+                padding: 0.9rem 1.5rem;
+                border-bottom: 1px solid var(--line-gold);
+                background: linear-gradient(180deg, #0a1428, #050b14);
+                position: sticky; top: 0; z-index: 20;
             }
-            section {
-                border: 1px solid #e0e0e0;
-                padding: 1.25rem 1.5rem;
+            header .brand { font-family: Cinzel, serif; font-size: 1.25rem; color: var(--gold-hi); font-weight: 700; letter-spacing: 0.12em; }
+            header .tag { color: var(--muted); font-size: 0.82rem; }
+            header .spacer { flex: 1; }
+            .ghost {
+                background: transparent; color: var(--gold); border: 1px solid var(--line-gold);
+                padding: 0.4rem 0.8rem; border-radius: 3px; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
             }
-            h1 {
-                font-size: 1rem;
-                font-weight: 600;
+            .ghost:hover { border-color: var(--gold); color: var(--gold-hi); }
+
+            .wrap { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+            /* ---------- Intro ---------- */
+            .intro { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+            .card {
+                background: linear-gradient(180deg, var(--panel), var(--bg-2));
+                border: 1px solid var(--line);
+                border-radius: var(--radius);
+                padding: 1.1rem 1.25rem;
+                position: relative;
             }
-            h2 {
-                font-size: 0.75rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: #999;
-                font-weight: 400;
-                margin-bottom: 0.75rem;
-                display: flex;
-                justify-content: space-between;
-                align-items: baseline;
+            .card.gold { border-color: var(--line-gold); }
+            .card.gold::before {
+                content: ""; position: absolute; inset: -1px auto auto -1px; width: 22px; height: 22px;
+                border-top: 2px solid var(--gold); border-left: 2px solid var(--gold);
             }
-            #question,
-            #url {
-                width: 100%;
-                padding: 0.6rem 0;
-                border: none;
-                border-bottom: 1px solid #e0e0e0;
-                font-size: 1rem;
-                outline: none;
+            .card h2 { font-size: 0.82rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 0.5rem; }
+            .card p, .card li { color: #c9ccd3; font-size: 0.9rem; }
+            .card ol { padding-left: 1.1rem; }
+            .hero-title { font-size: 1.55rem; color: var(--gold-hi); line-height: 1.25; margin-bottom: 0.4rem; }
+
+            .stats { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+            .stat {
+                border: 1px solid var(--line); background: var(--bg-2); border-radius: 3px;
+                padding: 0.35rem 0.7rem; font-size: 0.8rem; color: var(--muted);
             }
-            #question:focus,
-            #url:focus {
-                border-bottom-color: #000;
+            .stat b { color: var(--gold-hi); font-weight: 600; }
+
+            /* ---------- Pipeline diagram ---------- */
+            .pipeline { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+            .node {
+                border: 1px solid var(--line); border-radius: 3px; padding: 0.35rem 0.7rem; font-size: 0.75rem;
+                text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); background: var(--bg-2);
+                transition: all 0.3s;
             }
-            #task label {
-                display: block;
-                font-size: 0.75rem;
-                color: #999;
+            .node.on { color: var(--bg); background: var(--c); border-color: var(--c); box-shadow: 0 0 14px var(--c); }
+            .node.done { color: var(--c); border-color: var(--c); }
+            .arrow { color: var(--line-gold); font-size: 0.9rem; }
+
+            /* ---------- Main grid ---------- */
+            .main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+            .section-title {
+                font-family: Cinzel, serif; color: var(--gold); font-size: 0.85rem; letter-spacing: 0.16em;
+                text-transform: uppercase; margin-bottom: 0.6rem; display: flex; align-items: baseline; gap: 0.6rem;
             }
-            #task label + label {
-                margin-top: 1rem;
+            .section-title small { font-family: Inter, sans-serif; text-transform: none; letter-spacing: 0; color: var(--muted); font-size: 0.78rem; }
+
+            /* Conversation */
+            #thread { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
+            .msg-user {
+                align-self: flex-end; max-width: 85%;
+                background: linear-gradient(135deg, #1b3150, #12223a); border: 1px solid #2a4468;
+                padding: 0.65rem 0.95rem; border-radius: 10px 10px 2px 10px;
             }
-            #run {
-                margin-top: 1rem;
+            .msg-agent { border-left: 2px solid var(--gold); }
+            .msg-agent .who { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 0.4rem; }
+            .msg-agent.error { border-left-color: var(--red); }
+            .msg-agent.error .who { color: var(--red); }
+            .options { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+            .option {
+                background: var(--panel-2); color: var(--gold-hi); border: 1px solid var(--line-gold);
+                padding: 0.45rem 0.8rem; border-radius: 3px; font-size: 0.85rem;
             }
-            button {
-                padding: 0.75rem 1.5rem;
-                background: #000;
-                color: #fff;
-                border: none;
-                font-size: 0.75rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                cursor: pointer;
+            .option:hover { background: #1c2f4d; border-color: var(--gold); }
+            .working { color: var(--muted); font-size: 0.9rem; display: flex; align-items: center; gap: 0.6rem; }
+            .spinner { width: 14px; height: 14px; border: 2px solid var(--line-gold); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.9s linear infinite; }
+            @keyframes spin { to { transform: rotate(360deg); } }
+
+            /* Report markdown */
+            .report h2 { font-size: 1.05rem; color: var(--gold-hi); margin: 1.1rem 0 0.4rem; }
+            .report h2:first-child { margin-top: 0; }
+            .report h3 { font-size: 0.9rem; color: var(--gold); margin: 0.9rem 0 0.35rem; }
+            .report p, .report li { color: #d8d6cf; margin-bottom: 0.5rem; }
+            .report ul, .report ol { padding-left: 1.2rem; margin-bottom: 0.6rem; }
+            .report strong { color: var(--gold-hi); }
+            .report table { border-collapse: collapse; width: 100%; margin: 0.4rem 0 0.8rem; font-size: 0.83rem; display: block; overflow-x: auto; }
+            .report th { text-align: left; color: var(--gold); font-weight: 600; border-bottom: 1px solid var(--line-gold); padding: 0.35rem 0.6rem; white-space: nowrap; }
+            .report td { border-bottom: 1px solid var(--line); padding: 0.35rem 0.6rem; }
+            .report code { font-family: var(--mono); font-size: 0.82em; background: #0a1322; padding: 0.05rem 0.3rem; border-radius: 3px; }
+            .cite {
+                display: inline-block; font-family: var(--mono); font-size: 0.7rem; line-height: 1.2;
+                color: var(--blue); background: rgba(10, 200, 185, 0.1); border: 1px solid rgba(10, 200, 185, 0.4);
+                padding: 0.05rem 0.3rem; border-radius: 3px; margin: 0 1px; vertical-align: 1px; text-decoration: none; cursor: pointer;
             }
-            button:disabled {
-                opacity: 0.3;
+            .cite:hover { background: rgba(10, 200, 185, 0.25); }
+            .cite.bad { color: var(--red); border-color: var(--red); background: rgba(232, 64, 87, 0.1); }
+
+            .evidence { margin-top: 1.2rem; border-top: 1px solid var(--line-gold); padding-top: 0.8rem; }
+            .evidence > h3 { font-size: 0.8rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.5rem; }
+            .ev { border: 1px solid var(--line); border-radius: 4px; margin-bottom: 0.5rem; background: #08111f; transition: box-shadow 0.4s, border-color 0.4s; }
+            .ev.flash { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(10, 200, 185, 0.35); }
+            .ev summary { padding: 0.45rem 0.7rem; cursor: pointer; font-size: 0.83rem; color: #c9ccd3; list-style: none; }
+            .ev summary::-webkit-details-marker { display: none; }
+            .ev summary .cite { margin-right: 0.4rem; }
+            .ev .meta { color: var(--muted); font-size: 0.75rem; }
+            .ev .body { padding: 0 0.7rem 0.7rem; }
+
+            pre.code {
+                font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+                background: #060d18; border: 1px solid var(--line); border-radius: 4px; padding: 0.55rem 0.7rem; color: #cfe3ff; max-height: 360px; overflow: auto;
             }
-            #activity {
-                list-style: none;
-                font-size: 0.85rem;
-                line-height: 1.7;
+            table.mini { border-collapse: collapse; font-family: var(--mono); font-size: 0.72rem; margin-top: 0.5rem; display: block; overflow-x: auto; max-width: 100%; }
+            table.mini th, table.mini td { border: 1px solid var(--line); padding: 0.2rem 0.45rem; white-space: nowrap; text-align: left; }
+            table.mini th { color: var(--gold); }
+
+            /* Composer */
+            #composer { display: flex; gap: 0.5rem; }
+            #message {
+                flex: 1; background: #08111f; color: var(--text); border: 1px solid var(--line-gold); border-radius: 3px;
+                padding: 0.75rem 0.9rem; font: inherit; outline: none; resize: vertical; min-height: 48px;
             }
-            #activity .agent {
-                font-weight: 600;
+            #message:focus { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+            #send {
+                background: linear-gradient(180deg, #1e6b74, #0b3c45); color: var(--gold-hi); border: 1px solid var(--blue-dim);
+                padding: 0 1.2rem; border-radius: 3px; font-family: Cinzel, serif; letter-spacing: 0.1em; font-weight: 700;
             }
-            #activity .error {
-                color: #dc2626;
+            #send:hover:not(:disabled) { border-color: var(--blue); box-shadow: 0 0 12px rgba(10, 200, 185, 0.4); }
+            #send:disabled { opacity: 0.4; cursor: default; }
+            .examples { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
+            .example {
+                background: transparent; border: 1px dashed var(--line); color: #b9c0cc; border-radius: 3px;
+                padding: 0.3rem 0.6rem; font-size: 0.78rem; text-align: left;
             }
-            #status {
-                color: #999;
-                text-transform: none;
-                letter-spacing: 0;
+            .example:hover { border-color: var(--gold); color: var(--gold-hi); }
+            .example em { color: var(--gold); font-style: normal; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; margin-right: 0.3rem; }
+
+            /* ---------- Agent trace ---------- */
+            .trace-col { position: sticky; top: 72px; }
+            #lanes { display: flex; flex-direction: column; gap: 0.7rem; max-height: calc(100vh - 150px); overflow-y: auto; padding-right: 4px; }
+            .empty-trace { color: var(--muted); font-size: 0.88rem; border: 1px dashed var(--line); border-radius: var(--radius); padding: 1.1rem; }
+            .lane { border: 1px solid var(--line); border-left: 3px solid var(--c); border-radius: var(--radius); background: var(--panel); }
+            .lane-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line); }
+            .lane-name { font-family: Cinzel, serif; font-weight: 700; color: var(--c); letter-spacing: 0.06em; font-size: 0.9rem; }
+            .lane-role { font-size: 0.72rem; color: var(--muted); }
+            .lane-status { margin-left: auto; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: flex; align-items: center; gap: 0.35rem; }
+            .lane-status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+            .lane.active .lane-status { color: var(--c); }
+            .lane.active .lane-status .dot { background: var(--c); box-shadow: 0 0 8px var(--c); animation: pulse 1.2s infinite; }
+            @keyframes pulse { 50% { opacity: 0.3; } }
+            .lane-task { padding: 0.45rem 0.75rem 0; font-size: 0.8rem; color: #b9c0cc; }
+            .lane-task b { color: var(--muted); font-weight: 500; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
+            .calls { padding: 0.45rem 0.75rem 0.6rem; display: flex; flex-direction: column; gap: 0.35rem; }
+            .call { border: 1px solid var(--line); border-radius: 4px; background: #08111f; }
+            .call summary { list-style: none; cursor: pointer; padding: 0.35rem 0.55rem; display: flex; gap: 0.45rem; align-items: baseline; font-size: 0.8rem; }
+            .call summary::-webkit-details-marker { display: none; }
+            .call .fn { font-family: var(--mono); color: var(--gold); font-size: 0.75rem; white-space: nowrap; }
+            .call .what { color: #c9ccd3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+            .call .state { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+            .call.pending .state { color: var(--c); }
+            .call.err .state { color: var(--red); }
+            .call .body { padding: 0 0.55rem 0.55rem; display: flex; flex-direction: column; gap: 0.4rem; }
+            .call .label { font-size: 0.66rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+            .call.flash { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(10, 200, 185, 0.35); }
+            .note { font-size: 0.78rem; color: var(--muted); padding: 0 0.75rem 0.5rem; }
+
+            /* Template's context panel: a drawer, hidden until asked for */
+            body:not(.show-ctx) { margin-right: 0 !important; }
+            body:not(.show-ctx) #context-panel { display: none; }
+            #context-panel { background: #08111f !important; border-left: 1px solid var(--line-gold) !important; color: #cfd6e0; z-index: 30; top: 0; }
+            #context-panel .ctx-head { background: #08111f !important; }
+            #context-panel .ctx-head.active { color: var(--gold) !important; border-top-color: var(--gold) !important; }
+            .context-msg.new { animation: none !important; }
+
+            footer { color: var(--muted); font-size: 0.75rem; text-align: center; padding: 2rem 1rem; }
+
+            @media (max-width: 1000px) {
+                .intro { grid-template-columns: 1fr; }
+                .main { grid-template-columns: 1fr; }
+                .trace-col { position: static; }
+                #lanes { max-height: none; }
             }
-            #output {
-                font-family: ui-monospace, monospace;
-                font-size: 0.8rem;
-                white-space: pre-wrap;
-                word-break: break-word;
-                line-height: 1.5;
-            }
-            .empty {
-                color: #999;
+            @media (max-width: 600px) {
+                .wrap { padding: 1rem; }
+                header { padding: 0.7rem 1rem; }
+                header .tag { display: none; }
+                .hero-title { font-size: 1.25rem; }
             }
         </style>
     </head>
     <body>
-        <main>
-            <h1>Deep research: a lead splits your question, researchers walk Wikipedia in parallel, and a writer turns their findings into a cited report</h1>
+        <header>
+            <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+                <polygon points="16,2 29,9 29,23 16,30 3,23 3,9" fill="none" stroke="#c8aa6e" stroke-width="1.6" />
+                <polygon points="16,8 23,12 23,20 16,24 9,20 9,12" fill="#0ac8b9" opacity="0.25" stroke="#0ac8b9" stroke-width="1" />
+                <circle cx="16" cy="16" r="2.4" fill="#f0e6d2" />
+            </svg>
+            <span class="brand">RIFT RECON</span>
+            <span class="tag">a multi-agent research team for real League of Legends match data</span>
+            <span class="spacer"></span>
+            <button class="ghost" id="newchat" title="Start a fresh conversation">New question</button>
+            <button class="ghost" id="ctxbtn" title="Show the exact messages each agent sent to the model">Raw contexts</button>
+        </header>
 
-            <section>
-                <h2>Task</h2>
-                <form id="task">
-                    <label>Question
-                        <input id="question" value="How did the Apollo program's computers influence later computing?" placeholder="What do you want to know?" autocomplete="off" />
-                    </label>
-                    <label>Starting article
-                        <input id="url" value="https://en.wikipedia.org/wiki/Apollo_program" placeholder="A Wikipedia URL, e.g. https://en.wikipedia.org/wiki/Apollo_program" autocomplete="off" />
-                    </label>
-                    <button id="run" type="submit">Run</button>
-                </form>
+        <div class="wrap">
+            <section class="intro">
+                <div class="card gold">
+                    <h1 class="hero-title">Ask the match data, not the meta.</h1>
+                    <p>
+                        Rift Recon answers League of Legends questions with evidence from <b>4,044 real games</b> (40,410 player-rows) played on
+                        the EU Nordic &amp; East server, mostly January 2025 on patch 15.1, joined with Riot's Data Dragon item and champion tables.
+                        A <b style="color: var(--lead)">Lead</b> plans the research, several <b style="color: var(--researcher)">Researchers</b> query the data with SQL in
+                        parallel, and a <b style="color: var(--writer)">Writer</b> turns their findings into a report where every number is cited to the
+                        query that produced it.
+                    </p>
+                </div>
+                <div class="card">
+                    <h2>Who it's for</h2>
+                    <p>
+                        Players, coaches and analysts who want to test a belief ("control wards win games", "red side is cursed", "Jinx is
+                        overrated") against real games. You'll also be told plainly when a question can't be answered from this data.
+                    </p>
+                </div>
+                <div class="card">
+                    <h2>How to use it</h2>
+                    <ol>
+                        <li>Ask a question, or pick an example below.</li>
+                        <li>If it's too vague to measure, the Lead asks you to narrow it. Click an option or reply.</li>
+                        <li>Watch the agents work on the right: every tool call, its SQL and its result.</li>
+                        <li>Click a <span class="cite">Q4</span> citation to see the exact query behind a number.</li>
+                    </ol>
+                </div>
             </section>
 
-            <section>
-                <h2>Activity <span id="status"></span></h2>
-                <ol id="activity"><li class="empty">Each agent's steps appear here.</li></ol>
-            </section>
+            <div class="stats" id="stats"></div>
 
-            <section>
-                <h2>Output</h2>
-                <div id="output" class="empty">The report's markdown appears here.</div>
-            </section>
-        </main>
+            <div class="main">
+                <section>
+                    <div class="section-title">Research desk <small id="sessionnote"></small></div>
+                    <div id="thread"></div>
+                    <form id="composer">
+                        <textarea id="message" rows="2" placeholder="e.g. In ranked solo queue, does the side you start on (blue vs red) change your odds of winning?" autocomplete="off"></textarea>
+                        <button id="send" type="submit">ASK</button>
+                    </form>
+                    <div class="examples" id="examples"></div>
+                </section>
+
+                <section class="trace-col">
+                    <div class="section-title">War room <small>live agent &amp; tool calls</small></div>
+                    <div class="pipeline">
+                        <span class="node" id="n-lead" style="--c: var(--lead)">Lead · plan</span><span class="arrow">➜</span>
+                        <span class="node" id="n-res" style="--c: var(--researcher)">Researchers · parallel SQL</span><span class="arrow">➜</span>
+                        <span class="node" id="n-lead2" style="--c: var(--lead)">Lead · gap check</span><span class="arrow">➜</span>
+                        <span class="node" id="n-writer" style="--c: var(--writer)">Writer · cited report</span>
+                    </div>
+                    <div id="lanes"><div class="empty-trace">Each agent gets a lane here when it starts. Expand any tool call to see its arguments (the SQL) and the result the agent got back.</div></div>
+                </section>
+            </div>
+        </div>
+        <footer>
+            Data: Kaggle "League of Legends Match Dataset 2025" by jakubkrasuski, plus Riot Data Dragon 15.1.1. Rift Recon isn't endorsed by Riot Games.
+        </footer>
 
         <script src="/context-panel.js"></script>
         <script>
             const $ = (id) => document.getElementById(id);
-            let source = null;
-            let runId = null;
+            const EXAMPLES = [
+                ["Clear", "In ranked solo queue, do junglers who buy more control wards win more often?"],
+                ["Clear", "Does blue side or red side win more in Ranked Solo/Duo, and does it depend on game length?"],
+                ["Compare", "Which marksman champions have the best win rate in Ranked Solo/Duo with at least 100 games, and is the gap real?"],
+                ["Vague", "Who's the best?"],
+                ["Vague", "What should I build?"],
+                ["Out of scope", "What was T1's win rate at Worlds 2024?"],
+            ];
+            const ROLES = { Lead: ["var(--lead)", "plans, clarifies, fans out, checks gaps"], Writer: ["var(--writer)", "writes the cited report"] };
+            const roleOf = (agent) => (agent.startsWith("Researcher") ? ["var(--researcher)", "fresh context · SQL over the match data"] : ROLES[agent] || ["var(--gold)", ""]);
 
-            function addActivity(agent, text, cls = "") {
-                const li = document.createElement("li");
-                li.className = cls;
-                if (agent) {
-                    const name = document.createElement("span");
-                    name.className = "agent";
-                    name.textContent = agent + " ";
-                    li.appendChild(name);
-                }
-                li.append(text);
-                $("activity").appendChild(li);
+            let source = null, runId = null, sessionId = "", busy = false;
+            let lanes = {}, calls = {}, queriesById = {};
+
+            // ---------- Intro data ----------
+            fetch("/api/info").then((r) => r.json()).then((s) => {
+                $("stats").innerHTML = [
+                    ["Games", s.games.toLocaleString()],
+                    ["Player-rows", s.participant_rows.toLocaleString()],
+                    ["Distinct players", s.players.toLocaleString()],
+                    ["Region", s.region],
+                    ["Dates", `${s.first_game} → ${s.last_game}`],
+                    ["Extra source", "Riot Data Dragon 15.1.1"],
+                ].map(([k, v]) => `<span class="stat">${k}: <b>${v}</b></span>`).join("");
+            });
+            for (const [kind, q] of EXAMPLES) {
+                const b = document.createElement("button");
+                b.className = "example"; b.type = "button";
+                b.innerHTML = `<em>${kind}</em>`; b.append(q);
+                b.onclick = () => { if (!busy) send(q); };
+                $("examples").appendChild(b);
             }
-
-            function showOutput(markdown) {
-                $("output").className = "";
-                $("output").textContent = markdown;
-            }
-
-            function finish(message) {
-                $("status").textContent = message;
-                $("run").disabled = false;
-                source.close();
-            }
-
-            $("task").addEventListener("submit", (e) => {
-                e.preventDefault();
+            $("ctxbtn").onclick = () => document.body.classList.toggle("show-ctx");
+            $("newchat").onclick = () => {
                 if (source) source.close();
-                const params = new URLSearchParams({ question: $("question").value.trim(), url: $("url").value.trim() });
+                sessionId = ""; busy = false; $("send").disabled = false;
+                $("thread").replaceChildren(); resetTrace(); $("sessionnote").textContent = "";
+            };
 
-                $("activity").replaceChildren();
-                $("output").className = "empty";
-                $("output").textContent = "The report's markdown appears here.";
-                $("status").textContent = "running";
-                $("run").disabled = true;
+            // ---------- Conversation ----------
+            function addUser(text) {
+                const d = document.createElement("div");
+                d.className = "msg-user"; d.textContent = text;
+                $("thread").appendChild(d);
+            }
+            function agentCard(label, cls = "") {
+                const d = document.createElement("div");
+                d.className = "card msg-agent " + cls;
+                d.innerHTML = `<div class="who">${label}</div>`;
+                $("thread").appendChild(d);
+                return d;
+            }
+            function workingCard() {
+                const d = agentCard("Research team");
+                d.insertAdjacentHTML("beforeend", `<div class="working"><span class="spinner"></span><span class="wtext">The Lead is reading your question…</span></div>`);
+                return d;
+            }
+
+            function citeChips(html) {
+                return html.replace(/\[(Q\d+)\]/g, (_, id) => `<a class="cite" data-q="${id}">${id}</a>`).replace(/\[unverified\]/g, `<span class="cite bad" title="The writer cited a query that never ran">unverified</span>`);
+            }
+
+            function renderReport(card, markdown, evidence) {
+                card.querySelector(".who").textContent = "Report";
+                card.querySelector(".working")?.remove();
+                const body = document.createElement("div");
+                body.className = "report";
+                body.innerHTML = citeChips(DOMPurify.sanitize(marked.parse(markdown)));
+                card.appendChild(body);
+                if (evidence.length) {
+                    const ev = document.createElement("div");
+                    ev.className = "evidence";
+                    ev.innerHTML = `<h3>Evidence · the query behind each citation</h3>`;
+                    for (const q of evidence) ev.appendChild(evidenceItem(q));
+                    card.appendChild(ev);
+                }
+                card.addEventListener("click", (e) => {
+                    const chip = e.target.closest(".cite[data-q]");
+                    if (chip) { e.preventDefault(); jumpTo(chip.dataset.q, card); }
+                });
+            }
+
+            function evidenceItem(q) {
+                const d = document.createElement("details");
+                d.className = "ev"; d.dataset.q = q.id;
+                const s = document.createElement("summary");
+                s.innerHTML = `<span class="cite">${q.id}</span>`;
+                s.append(q.purpose + " ");
+                const m = document.createElement("span");
+                m.className = "meta"; m.textContent = `· ${q.row_count} rows · ${q.agent}`;
+                s.appendChild(m);
+                const b = document.createElement("div");
+                b.className = "body";
+                const pre = document.createElement("pre");
+                pre.className = "code"; pre.textContent = q.sql;
+                b.append(pre, miniTable(q.columns, q.rows));
+                d.append(s, b);
+                return d;
+            }
+            function miniTable(cols, rows) {
+                const t = document.createElement("table");
+                t.className = "mini";
+                const head = t.insertRow();
+                for (const c of cols) { const th = document.createElement("th"); th.textContent = c; head.appendChild(th); }
+                for (const r of rows) { const tr = t.insertRow(); for (const v of r) tr.insertCell().textContent = v ?? ""; }
+                return t;
+            }
+            function jumpTo(qid, card) {
+                const ev = card.querySelector(`.ev[data-q="${qid}"]`);
+                if (ev) { ev.open = true; flash(ev); ev.scrollIntoView({ block: "center" }); }
+                const call = document.querySelector(`.call[data-q="${qid}"]`);
+                if (call) { call.open = true; flash(call); call.scrollIntoView({ block: "nearest" }); }
+            }
+            function flash(el) { el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
+
+            function renderClarify(card, q) {
+                card.querySelector(".who").textContent = "Lead · needs one detail";
+                card.querySelector(".working")?.remove();
+                const p = document.createElement("p");
+                p.textContent = q.question;
+                const opts = document.createElement("div");
+                opts.className = "options";
+                for (const o of q.options) {
+                    const b = document.createElement("button");
+                    b.className = "option"; b.type = "button"; b.textContent = o;
+                    b.onclick = () => { if (!busy) send(o); };
+                    opts.appendChild(b);
+                }
+                const hint = document.createElement("p");
+                hint.className = "meta"; hint.style.cssText = "color:var(--muted);font-size:.8rem;margin-top:.6rem";
+                hint.textContent = "Click an option or type your own answer below.";
+                card.append(p, opts, hint);
+                $("message").focus();
+            }
+
+            // ---------- Trace ----------
+            function resetTrace() {
+                lanes = {}; calls = {}; queriesById = {};
+                $("lanes").replaceChildren();
+                document.querySelectorAll(".node").forEach((n) => n.classList.remove("on", "done"));
                 resetContext();
+            }
+            function stage(id, state) {
+                const n = $(id);
+                if (state === "on") { document.querySelectorAll(".node.on").forEach((x) => { x.classList.remove("on"); x.classList.add("done"); }); n.classList.add("on"); n.classList.remove("done"); }
+                else n.classList.add("done"), n.classList.remove("on");
+            }
+            function lane(agent) {
+                if (lanes[agent]) return lanes[agent];
+                const [color, role] = roleOf(agent);
+                const el = document.createElement("div");
+                el.className = "lane"; el.style.setProperty("--c", color);
+                el.innerHTML = `<div class="lane-head"><span class="lane-name"></span><span class="lane-role"></span><span class="lane-status"><span class="dot"></span><span class="st">waiting</span></span></div><div class="calls"></div>`;
+                el.querySelector(".lane-name").textContent = agent;
+                el.querySelector(".lane-role").textContent = role;
+                $("lanes").appendChild(el);
+                lanes[agent] = el;
+                return el;
+            }
+            function setStatus(agent, text, active) {
+                const l = lane(agent);
+                l.querySelector(".st").textContent = text;
+                l.classList.toggle("active", active);
+            }
+            function describeArgs(name, args) {
+                if (!args || typeof args !== "object") return String(args ?? "");
+                if (name === "run_sql") return args.purpose || args.sql;
+                if (name === "win_rate") return `by ${args.group_by}` + (args.where ? ` · ${args.where}` : "");
+                if (name === "research") return args.task;
+                if (name === "request_clarification") return args.question;
+                return JSON.stringify(args);
+            }
+            function argsText(name, args) {
+                if (!args || typeof args !== "object") return String(args ?? "");
+                if (name === "run_sql") return args.sql;
+                return Object.entries(args).map(([k, v]) => `${k}: ${typeof v === "string" ? v : JSON.stringify(v)}`).join("\n");
+            }
 
-                source = new EventSource("/run?" + params);
+            function toolStart(e) {
+                const l = lane(e.agent);
+                const d = document.createElement("details");
+                d.className = "call pending";
+                d.innerHTML = `<summary><span class="fn"></span><span class="what"></span><span class="state">running…</span></summary><div class="body"><div class="label">Arguments</div><pre class="code args"></pre><div class="label">Result</div><pre class="code res">…</pre></div>`;
+                d.querySelector(".fn").textContent = e.name;
+                d.querySelector(".what").textContent = describeArgs(e.name, e.args);
+                d.querySelector(".what").title = describeArgs(e.name, e.args);
+                d.querySelector(".args").textContent = argsText(e.name, e.args);
+                l.querySelector(".calls").appendChild(d);
+                calls[e.id] = d;
+                setStatus(e.agent, e.name === "research" ? "waiting on researchers" : "calling " + e.name, true);
+                if (e.name === "research") stage("n-res", "on");
+                autoscroll();
+            }
+            function toolEnd(e) {
+                const d = calls[e.id];
+                if (!d) return;
+                d.classList.remove("pending");
+                const res = e.result || "";
+                d.querySelector(".res").textContent = res;
+                const m = res.match(/^\[(Q\d+)\]\s+(\d+)/);
+                if (m) { d.dataset.q = m[1]; d.querySelector(".state").innerHTML = `<span class="cite">${m[1]}</span> ${m[2]} rows`; }
+                else if (res.startsWith("ERROR")) { d.classList.add("err"); d.querySelector(".state").textContent = "error · retrying"; }
+                else d.querySelector(".state").textContent = "done";
+                setStatus(e.agent, "thinking", true);
+            }
+            function activity(e) {
+                if (e.text === "started") {
+                    setStatus(e.agent, "thinking", true);
+                    if (e.agent === "Writer") stage("n-writer", "on");
+                    if (e.agent === "Lead") stage("n-lead", "on");
+                } else if (e.text.startsWith("finished")) {
+                    setStatus(e.agent, "done", false);
+                    if (e.agent.startsWith("Researcher") && !Object.keys(lanes).some((a) => a.startsWith("Researcher") && lanes[a].classList.contains("active"))) stage("n-lead2", "on");
+                    if (e.agent === "Writer") stage("n-writer", "done");
+                } else {
+                    const l = lane(e.agent);
+                    const n = document.createElement("div");
+                    n.className = "note"; n.textContent = "⚠ " + e.text;
+                    l.appendChild(n);
+                }
+            }
+            function autoscroll() { const L = $("lanes"); if (L.scrollHeight - L.scrollTop - L.clientHeight < 200) L.scrollTop = L.scrollHeight; }
+
+            // ---------- Send ----------
+            function send(text) {
+                text = text.trim();
+                if (!text || busy) return;
+                if (source) source.close();
+                busy = true; $("send").disabled = true; $("message").value = "";
+                addUser(text);
+                const card = workingCard();
+                card.scrollIntoView({ block: "nearest" });
+                resetTrace();
+                const t0 = Date.now();
+                const tick = setInterval(() => { const w = card.querySelector(".wtext"); if (w) w.textContent = `Researching… ${Math.round((Date.now() - t0) / 1000)}s (usually 40–120s). Watch the war room →`; }, 1000);
+                const done = () => { clearInterval(tick); busy = false; $("send").disabled = false; source.close(); };
+
+                source = new EventSource("/run?" + new URLSearchParams({ message: text, session_id: sessionId }));
                 source.onmessage = (msg) => {
-                    const event = JSON.parse(msg.data);
-                    if (event.type === "start") runId = event.run_id;
-                    else if (event.type === "context") showContext(runId);
-                    else if (event.type === "activity") addActivity(event.agent, event.text);
-                    else if (event.type === "done") {
-                        showOutput(event.markdown);
-                        finish("done");
-                    } else if (event.type === "error") {
-                        addActivity("", event.message, "error");
-                        finish("failed");
-                    }
+                    const e = JSON.parse(msg.data);
+                    if (e.type === "start") { runId = e.run_id; sessionId = e.session_id; $("sessionnote").textContent = "session " + sessionId.slice(0, 8); }
+                    else if (e.type === "context") showContext(runId);
+                    else if (e.type === "activity") activity(e);
+                    else if (e.type === "tool_start") toolStart(e);
+                    else if (e.type === "tool_end") toolEnd(e);
+                    else if (e.type === "clarify") { stage("n-lead", "done"); renderClarify(card, e); done(); }
+                    else if (e.type === "done") { renderReport(card, e.markdown, e.evidence || []); document.querySelectorAll(".node.on").forEach((x) => x.classList.replace("on", "done")); done(); }
+                    else if (e.type === "error") { card.classList.add("error"); card.querySelector(".who").textContent = "Error"; card.querySelector(".working").textContent = e.message; done(); }
                 };
                 source.onerror = () => {
-                    addActivity("", "Lost the connection to the server.", "error");
-                    finish("failed");
+                    if (!busy) return;
+                    card.classList.add("error"); card.querySelector(".who").textContent = "Error";
+                    const w = card.querySelector(".working"); if (w) w.textContent = "Lost the connection to the server. Try again.";
+                    done();
                 };
-            });
+            }
+            $("composer").addEventListener("submit", (e) => { e.preventDefault(); send($("message").value); });
+            $("message").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send($("message").value); } });
         </script>
     </body>
 </html>

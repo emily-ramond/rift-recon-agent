@@ -10,3 +10,6 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# The raw Kaggle download. build_data.py turns it into the committed parquet files.
+data/raw/
