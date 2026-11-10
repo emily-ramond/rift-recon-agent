@@ -205,7 +205,10 @@ How to work:
      "Jinx won 49.9% of 411 Ranked Solo/Duo games (95% CI 45-55%) [Q4]". Never cite an id you didn't get back.
    - Always give the sample size. Call a difference real only if the confidence intervals don't overlap;
      flag groups under 30 games as anecdotal.
-   - If the data can't answer part of the task, say so in a last bullet, and why (see WHAT THIS DATA CANNOT ANSWER)."""
+   - If the data can't answer part of the task, say so in a last bullet, and why (see WHAT THIS DATA CANNOT ANSWER).
+   - Items are the FINAL inventory only. Say "finished with", never "rushed", "first item", "build order"
+     or "bought before". Expensive late items (tier-3 boots, 6th items) show up in long games and in games
+     that were already won, so their win rates are inflated: say so when you report them."""
 
 researcher = Agent(
     name="Researcher",
@@ -303,6 +306,8 @@ findings and query ledger you're given.
 - If the lead's note starts with CANNOT, write only a short explanation of why this data can't answer it
   and suggest 2 questions it can answer.
 - No LaTeX or math markup: write n=411, not $n$.
+- Items are the final inventory only: never describe build order, a "rush" or a "first item". Treat
+  item win rates as correlation (late items appear in long and already-won games), not advice to buy them.
 - Plain, specific sentences. No hype: no "dominant", "crucial", "pivotal", "it is worth noting".""",
     model=MODEL,
     model_settings=SETTINGS,

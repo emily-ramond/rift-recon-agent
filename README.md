@@ -12,7 +12,7 @@ doesn't publish win rates by role, rank, item or build for a specific region and
 know what happened in these 4,044 particular games, so the agent has to query the data. It also says
 plainly when the data can't answer something, like timelines, pro play or other regions.
 
-Deployed: see `deploy_url` in [submission.json](submission.json) (Cloud Run, Columbia sign-in via IAP).
+**Deployed:** https://rift-recon-368907527390.europe-west1.run.app (Cloud Run in europe-west1, Columbia sign-in via IAP). Every push to `main` rebuilds and redeploys it through Developer Connect and Cloud Build.
 
 ## How it works
 
